@@ -2,6 +2,9 @@
 # Class to represent a graph where the nodes are positioned in a circular pattern
 # and the edges must arc toward the center of the circle.
 #####
+
+from Node import Node
+
 class Graph:
 
     def __init__(self):
@@ -16,21 +19,30 @@ class Graph:
     # Function that returns the number of times edges in the graph cross over
     def getCrosses(self):
         crosses = 0
-        for node in self.nodes:
+        nodes = self.nodes
+        for node in nodes:
             for edge in node.getOutgoing():
-                for otherNode in self.nodes:
-                    if (otherNode != edge[0] && otherNode != edge[1]):
-                        startBetween = True
-                        try:
-                            startIndex = self.nodes.index(otherNode, edge[0], edge[1])
-                        except ValueError:
-                            startBetween = False
+                startIndex = nodes.index(edge[0])
+                endIndex = nodes.index(edge[1])
+                if endIndex < startIndex:
+                    temp = startIndex
+                    startIndex = endIndex
+                    endIndex = temp
+                for otherNode in nodes:
+                    if (otherNode != edge[0] and otherNode != edge[1] and nodes.index(otherNode) > nodes.index(node)):
+                        otherStartIndex = nodes.index(otherNode)
+                        startsBetween = False
+                        if (startIndex < otherStartIndex and otherStartIndex < endIndex):
+                            startsBetween = True
                         for otherEdge in otherNode.getOutgoing():
-                            endBetween = True
-                            try:
-                                endIndex = self.nodes.index(otherEdge[1], edge[0], edge[1]
-                            except ValueError:
-                                endBetween = False
-                            if (startBetween != endBetween):
-                                crosses += 1
+                            if nodes.index(otherEdge[1]) > nodes.index(node):
+                                otherEndIndex = nodes.index(otherEdge[1])
+                                endsBetween = False
+                                if (startIndex == otherStartIndex or startIndex == otherEndIndex or endIndex == otherStartIndex or endIndex == otherEndIndex):
+                                    break
+                                if (startIndex < otherEndIndex and otherEndIndex < endIndex):
+                                    endsBetween = True
+                                if (startsBetween != endsBetween):
+                                    print("Crossover #" +str(crosses + 1) + " between [" + edge[0].getName() + ", " + edge[1].getName() +"] and [" + otherEdge[0].getName() + ", " + otherEdge[1].getName() + "]\n")
+                                    crosses += 1
         return crosses
