@@ -5,10 +5,11 @@
 
 from Node import Node
 
-class Graph:
+class Chromosome:
 
-    def __init__(self):
-        self.nodes = []
+    def __init__(self, nodes):
+        self.nodes = nodes
+        self.fitness = self.getCrosses()
 
     def getNodes(self):
         return self.nodes
@@ -16,7 +17,8 @@ class Graph:
     def addNode(self, node):
         self.nodes.append(node)
 
-    # Function that returns the number of times edges in the graph cross over
+    # Function that returns the number of times edges in the graph cross over.
+    # This acts as the measure of fitness for the evolutionary algorithm.
     def getCrosses(self):
         crosses = 0
         nodes = self.nodes
@@ -43,6 +45,5 @@ class Graph:
                                 if (startIndex < otherEndIndex and otherEndIndex < endIndex):
                                     endsBetween = True
                                 if (startsBetween != endsBetween):
-                                    print("Crossover #" +str(crosses + 1) + " between [" + edge[0].getName() + ", " + edge[1].getName() +"] and [" + otherEdge[0].getName() + ", " + otherEdge[1].getName() + "]\n")
                                     crosses += 1
         return crosses
