@@ -17,33 +17,57 @@ class Chromosome:
     def addNode(self, node):
         self.nodes.append(node)
 
+    def getFitness(self):
+        return self.fitness
+
+    def updateFitness(self):
+        self.fitness = self.getCrosses()
+
     # Function that returns the number of times edges in the graph cross over.
     # This acts as the measure of fitness for the evolutionary algorithm.
     def getCrosses(self):
         crosses = 0
         nodes = self.nodes
+        
         for node in nodes:
-            for edge in node.getOutgoing():
-                startIndex = nodes.index(edge[0])
-                endIndex = nodes.index(edge[1])
-                if endIndex < startIndex:
-                    temp = startIndex
-                    startIndex = endIndex
-                    endIndex = temp
+            for edge in  node.getOutgoing():
+                edgeHead = nodes.index(node)
+                edgeTail = nodes.index(edge[1])
+
+                # Edge is a loop and therefore can always be made to not intersect other edges
+                if edgeHead == edgeTail:
+                    continue
+
+                # Edges between adjacent vertices cannot intersect other edges
+                elif (edgeHead - edgeTail == 1 or edgeHead - edgeTail == -1 or edgeHead - edgeTail == -(len(nodes)-1)):
+                    continue
+                
+                # This undirects the edge for easier processing
+                elif edgeTail < edgeHead:
+                    temp = edgeHead
+                    edgeHead = edgeTail
+                    edgeTail = temp
+                
                 for otherNode in nodes:
-                    if (otherNode != edge[0] and otherNode != edge[1] and nodes.index(otherNode) > nodes.index(node)):
-                        otherStartIndex = nodes.index(otherNode)
-                        startsBetween = False
-                        if (startIndex < otherStartIndex and otherStartIndex < endIndex):
-                            startsBetween = True
+
+                    # Ignore the nodes we are currently looking at (both sides of the edge)
+                    if otherNode != node and otherNode != edge[1]:
                         for otherEdge in otherNode.getOutgoing():
-                            if nodes.index(otherEdge[1]) > nodes.index(node):
-                                otherEndIndex = nodes.index(otherEdge[1])
-                                endsBetween = False
-                                if (startIndex == otherStartIndex or startIndex == otherEndIndex or endIndex == otherStartIndex or endIndex == otherEndIndex):
-                                    break
-                                if (startIndex < otherEndIndex and otherEndIndex < endIndex):
-                                    endsBetween = True
-                                if (startsBetween != endsBetween):
-                                    crosses += 1
-        return crosses
+                            otherEdgeHead = nodes.index(otherNode)
+                            otherEdgeTail = nodes.index(otherEdge[1])
+
+                            # Edge is a loop (see above)
+                            if otherEdgeHead == otherEdgeTail:
+                                continue
+
+                            # Undirect edge (see above)
+                            elif otherEdgeTail < otherEdgeHead:
+                                temp = otherEdgeHead
+                                otherEdgeHead = otherEdgeTail
+                                otherEdgeTail = temp
+
+                            # Edges intersect iff the vertices of the edges are interwoven
+                            if ((edgeHead < otherEdgeHead and otherEdgeHead < edgeTail and edgeTail < otherEdgeTail) or (otherEdgeHead < edgeHead and edgeHead < otherEdgeTail and otherEdgeTail < edgeTail)):
+                                crosses += 1
+        
+        return 400 - int(crosses/2)
